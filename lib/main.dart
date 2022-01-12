@@ -1,115 +1,273 @@
 import 'package:flutter/material.dart';
+import 'package:sliding_switch/sliding_switch.dart';
+
+import 'styling/main_screen_styles.dart';
+import 'widgets/main_screen.dart';
 
 void main() {
-  runApp(const MyApp());
+  runApp(const PizzaApp());
 }
 
-class MyApp extends StatelessWidget {
-  const MyApp({Key? key}) : super(key: key);
+const String appTitle = 'Калькулятор пиццы';
 
-  // This widget is the root of your application.
+class PizzaApp extends StatelessWidget {
+  const PizzaApp({Key? key}) : super(key: key);
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      title: 'Flutter Demo',
-      theme: ThemeData(
-        // This is the theme of your application.
-        //
-        // Try running your application with "flutter run". You'll see the
-        // application has a blue toolbar. Then, without quitting the app, try
-        // changing the primarySwatch below to Colors.green and then invoke
-        // "hot reload" (press "r" in the console where you ran "flutter run",
-        // or simply save your changes to "hot reload" in a Flutter IDE).
-        // Notice that the counter didn't reset back to zero; the application
-        // is not restarted.
-        primarySwatch: Colors.blue,
-      ),
-      home: const MyHomePage(title: 'Flutter Demo Home Page'),
+      debugShowCheckedModeBanner: false,
+      title: appTitle,
+      theme: globalThemeLight(),
+      home: const PizzaAppHomePage(),
     );
   }
 }
 
-class MyHomePage extends StatefulWidget {
-  const MyHomePage({Key? key, required this.title}) : super(key: key);
-
-  // This widget is the home page of your application. It is stateful, meaning
-  // that it has a State object (defined below) that contains fields that affect
-  // how it looks.
-
-  // This class is the configuration for the state. It holds the values (in this
-  // case the title) provided by the parent (in this case the App widget) and
-  // used by the build method of the State. Fields in a Widget subclass are
-  // always marked "final".
-
-  final String title;
-
+class PizzaAppHomePage extends StatefulWidget {
+  const PizzaAppHomePage({Key? key}) : super(key: key);
   @override
-  State<MyHomePage> createState() => _MyHomePageState();
+  State<PizzaAppHomePage> createState() => _PizzaAppHomePageState();
 }
 
-class _MyHomePageState extends State<MyHomePage> {
-  int _counter = 0;
+enum Souce { ostr, kislslad, sirn }
 
-  void _incrementCounter() {
+class _PizzaAppHomePageState extends State<PizzaAppHomePage> {
+  double _cost = 0;
+  bool _isTonkoeTesto = false;
+  int _pizzaRadius = 15;
+  Souce? _souce = Souce.ostr;
+  bool _addCheese = false;
+
+  var _icon = Icons.wb_sunny;
+
+  double _calcCost() {
+    _cost = 0;
+    if (_isTonkoeTesto) {
+      _cost += 15;
+    } else {
+      _cost += 30;
+    }
+
+    switch (_pizzaRadius) {
+      case 15:
+        _cost += 100;
+        break;
+      case 30:
+        _cost += 150;
+        break;
+      case 45:
+        _cost += 200;
+        break;
+      case 60:
+        _cost += 300;
+        break;
+    }
+
+    switch (_souce) {
+      case Souce.ostr:
+        _cost += 20;
+        break;
+      case Souce.kislslad:
+        _cost += 15;
+        break;
+      case Souce.sirn:
+        _cost += 10;
+        break;
+      default:
+        _cost += 0;
+    }
+
+    _addCheese == true ? _cost += 50 : _cost += 0;
+
+    return _cost;
+  }
+
+  void _onSouceChanged(Souce? value) {
     setState(() {
-      // This call to setState tells the Flutter framework that something has
-      // changed in this State, which causes it to rerun the build method below
-      // so that the display can reflect the updated values. If we changed
-      // _counter without calling setState(), then the build method would not be
-      // called again, and so nothing would appear to happen.
-      _counter++;
+      _souce = value;
+      setState(() {
+        _calcCost();
+      });
     });
   }
 
   @override
   Widget build(BuildContext context) {
-    // This method is rerun every time setState is called, for instance as done
-    // by the _incrementCounter method above.
-    //
-    // The Flutter framework has been optimized to make rerunning build methods
-    // fast, so that you can just rebuild anything that needs updating rather
-    // than having to individually change instances of widgets.
     return Scaffold(
-      appBar: AppBar(
-        // Here we take the value from the MyHomePage object that was created by
-        // the App.build method, and use it to set our appbar title.
-        title: Text(widget.title),
+      //appBar: AppBar(title: Text(appTitle)),
+      body: SingleChildScrollView(
+        child: Container(
+          //color: Colors.white,
+          child: Column(
+            children: [
+              pizzaPhotoInCornerWidget.pizzavuglu(),
+              zagolovok(text: appTitle),
+              const SizedBox(height: 10),
+              viborparametrov(),
+              const SizedBox(height: 20),
+              kakoetesto(),
+              tiptesta(),
+              Divider(),
+              razmerpizzi(pizzaRadius: _pizzaRadius),
+              razmerpizzivibor(),
+              const SizedBox(height: 3),
+              const Divider(),
+              viborsousa(),
+              ostriy(),
+              kisliy(),
+              sirniy(),
+              const SizedBox(height: 5),
+              const Divider(),
+              dopolnitelniysir(context),
+              stoimostpizzi(),
+              zakazat(),
+            ],
+          ),
+        ),
       ),
-      body: Center(
-        // Center is a layout widget. It takes a single child and positions it
-        // in the middle of the parent.
-        child: Column(
-          // Column is also a layout widget. It takes a list of children and
-          // arranges them vertically. By default, it sizes itself to fit its
-          // children horizontally, and tries to be as tall as its parent.
-          //
-          // Invoke "debug painting" (press "p" in the console, choose the
-          // "Toggle Debug Paint" action from the Flutter Inspector in Android
-          // Studio, or the "Toggle Debug Paint" command in Visual Studio Code)
-          // to see the wireframe for each widget.
-          //
-          // Column has various properties to control how it sizes itself and
-          // how it positions its children. Here we use mainAxisAlignment to
-          // center the children vertically; the main axis here is the vertical
-          // axis because Columns are vertical (the cross axis would be
-          // horizontal).
+    );
+  }
+
+  Padding stoimostpizzi() {
+    return Padding(
+      padding: const EdgeInsets.all(8.0),
+      child: Container(
+        alignment: Alignment.center,
+        padding: const EdgeInsets.all(10),
+        child: Text(
+          "Стоимость : ${_calcCost()} руб.",
+          style: Theme.of(context).textTheme.headline5,
+        ),
+      ),
+    );
+  }
+
+  SizedBox dopolnitelniysir(BuildContext context) {
+    return SizedBox(
+      width: MediaQuery.of(context).size.width * 0.9,
+      child: Card(
+        elevation: 8,
+        child: Row(
           mainAxisAlignment: MainAxisAlignment.center,
-          children: <Widget>[
-            const Text(
-              'You have pushed the button this many times:',
+          children: [
+            Padding(
+              padding: const EdgeInsets.only(
+                right: 20,
+              ),
+              child: SizedBox(
+                width: 70,
+                height: 70,
+                child: Image.network(
+                  'https://i.insider.com/61951eb18e9bfa0019875316?width=1200&format=jpeg',
+                ),
+              ),
             ),
             Text(
-              '$_counter',
-              style: Theme.of(context).textTheme.headline4,
+              'Дополнительный сыр',
+              style: Theme.of(context).textTheme.subtitle1,
+            ),
+            Switch(
+              value: _addCheese,
+              onChanged: (bool value) {
+                setState(() {
+                  _addCheese = value;
+                  _calcCost();
+                });
+              },
+              activeThumbImage: new NetworkImage(
+                  'https://www.freeiconspng.com/thumbs/yes-png/yes-png-9.png'),
+              inactiveThumbImage: new NetworkImage(
+                  'https://upload.wikimedia.org/wikipedia/commons/thumb/d/d5/No_sign.svg/300px-No_sign.svg.png'),
             ),
           ],
         ),
       ),
-      floatingActionButton: FloatingActionButton(
-        onPressed: _incrementCounter,
-        tooltip: 'Increment',
-        child: const Icon(Icons.add),
-      ), // This trailing comma makes auto-formatting nicer for build methods.
+    );
+  }
+
+  SlidingSwitch tiptesta() {
+    return SlidingSwitch(
+      value: _isTonkoeTesto,
+      width: 280,
+      onChanged: (bool value) {
+        _isTonkoeTesto = value;
+        setState(() {
+          _calcCost();
+        });
+      },
+      height: 35,
+      animationDuration: const Duration(milliseconds: 400),
+      onTap: () {},
+      onDoubleTap: () {},
+      onSwipe: () {},
+      textOff: "Обычное тесто",
+      textOn: "Тонкое тесто",
+      colorOn: const Color(0xffdc6c73),
+      colorOff: const Color(0xff6682c0),
+      background: const Color(0xffe4e5eb),
+      buttonColor: const Color(0xfff7f5f7),
+      inactiveColor: const Color(0xff636f7b),
+    );
+  }
+
+  SizedBox sirniy() {
+    return SizedBox(
+      height: 30,
+      child: RadioListTile<Souce>(
+        title: Text('Сырный'),
+        value: Souce.sirn,
+        groupValue: _souce,
+        onChanged: _onSouceChanged,
+      ),
+    );
+  }
+
+  SizedBox kisliy() {
+    return SizedBox(
+      height: 30,
+      child: RadioListTile<Souce>(
+        title: Text('Кисло-сладкий'),
+        value: Souce.kislslad,
+        groupValue: _souce,
+        onChanged: _onSouceChanged,
+      ),
+    );
+  }
+
+  SizedBox ostriy() {
+    return SizedBox(
+      height: 30,
+      child: RadioListTile<Souce>(
+        title: Text('Острый'),
+        value: Souce.ostr,
+        groupValue: _souce,
+        onChanged: _onSouceChanged,
+      ),
+    );
+  }
+
+  SliderTheme razmerpizzivibor() {
+    return SliderTheme(
+      data: SliderThemeData(
+        thumbColor: Theme.of(context).splashColor, //Colors.green,
+        thumbShape: RoundSliderThumbShape(enabledThumbRadius: 10),
+        showValueIndicator: ShowValueIndicator.never,
+      ),
+      child: Slider(
+        value: _pizzaRadius.toDouble(),
+        min: 15,
+        max: 60,
+        divisions: 3,
+        label: _pizzaRadius.round().toString(),
+        onChanged: (double value) {
+          setState(() {
+            _pizzaRadius = value.toInt();
+            setState(() {
+              _calcCost();
+            });
+          });
+        },
+      ),
     );
   }
 }
